@@ -82,22 +82,36 @@ class Win(EndGameState):
     def __str__(self):
         return super().__str__() + "\n" + "The {}'s win!".format(self.move_order[-1])
 
+    def response(self):
+        return Loss()
+
+
+class Loss(EndGameState):
+    def __str__(self):
+        return "loss"
+
 
 class Tie(EndGameState):
     def __str__(self):
         return super().__str__() + "\n" + "It's a Draw!"
 
+    def response(self):
+        return Tie()
 
-class TicTacToe_MDP:
-    def initial_state(self):
-        return State()
 
-    def operators(self, state):
-        return state.possible_moves()
+def rewards(prev_state, move, new_state):
+    if type(new_state) is Win:
+        return 100
+    # if type(new_state) is Tie:
+    #     return 50
+    return 0
 
-    def reward(self, prev_state, action, new_state):
-        if type(new_state) == Win:
-            return 100
-        if type(new_state) == Tie:
-            return 50
-        return -1
+def penalties(opp_prev_state, opp_move, opp_new_state):
+    if type(opp_new_state) is Win:
+        return -100
+    # if type(opp_new_state) is Tie:
+    #     return 50
+    return 0
+
+def initial_state():
+    return State()

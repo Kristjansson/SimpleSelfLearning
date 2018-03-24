@@ -2,7 +2,8 @@
 
 from collections import namedtuple
 
-MDPStep = namedtuple('MDPStep', ['prev_state', 'move', 'new_state', 'player', 'reward'])
+GameStep = namedtuple('GameStep', ['prev_state', 'move', 'new_state', 'player'])
+MDPStep = namedtuple('MDPStep', ['prev_state', 'move', 'post_opp_move_state', 'player', 'reward'])
 
 def episode(mdp, players):
     curr_state = mdp.initial_state()
@@ -10,22 +11,48 @@ def episode(mdp, players):
         curr_player = players[0]
         move = curr_player.move(curr_state)
         new_state = curr_state.move(move)
-        reward = mdp.reward(curr_state, move, new_state)
             
-        yield MDPStep(prev_state = curr_state, 
-                      move = move,
-                      new_state = new_state,
-                      player = curr_player,
-                      reward = reward)
+        # This yields the player that moved from previous state to new_state
+        yield GameStep(prev_state = curr_state, 
+                       move = move,
+                       new_state = new_state,
+                       player = curr_player)
 
         curr_state = new_state
         players = (*players[1:], players[0])
 
+def transitions(mdp, players):
+    game = episode(mdp, players)
+    prev = next(game)
+    for step in game:
+        reward = mdp.reward(prev.prev_state, 
+                            prev.move, 
+                            prev.new_state, 
+                            step.move, 
+                            step.new_state)
+
+        yield MDPStep(prev_state = prev.prev_state, 
+                      move = prev.move,
+                      post_opp_move_state = step.new_state,
+                      player = prev.player,
+                      reward = reward)
+        prev = step
+
+    final_reward = mdp.reward(prev.prev_state, 
+                              prev.move, 
+                              prev.new_state)
+    
+    yield MDPStep(prev_state = prev.prev_state, 
+                  move = prev.move,
+                  post_opp_move_state = prev.new_state.response(),
+                  player = prev.player,
+                  reward = final_reward)
 
 
 if __name__ == '__main__':
-    import tictactoe
+    import tictactoe as rules
     import agent
+    from mdp import MDP
 
 
     # TODO: This is duplicated from train.py -- find a good place for it!
@@ -54,6 +81,15 @@ if __name__ == '__main__':
 
 
     class HumanConsolePlayer:
+        def __init__(self, name):
+            self.name = name
+
+        def __repr__(self):
+            return self.name
+
+        def __str__(self):
+            return self.__repr__()
+
         def move(self, curr_state):
             print('The current state is: \n' + str(curr_state))
             raw_move = input('Please input row and column separated by a space: ')
@@ -62,12 +98,15 @@ if __name__ == '__main__':
             return (row, col)
 
 
+    mdp = MDP(rules)
 
-    game = episode(tictactoe.TicTacToe_MDP(), 
-                   (HumanConsolePlayer(), TestingWrapper(agent.QLearner.load('champion.p'))))
+    game = transitions(mdp, 
+                   (HumanConsolePlayer("X's"), HumanConsolePlayer("O's")))
+    game = transitions(mdp, 
+                   (HumanConsolePlayer("X's"), 
+                    TestingWrapper(agent.QLearner.load('champion.p'))))
     
     for step in game:
-        pass
-    print(step.new_state)
-
-    input('Thanks for playing, press Enter to close!')
+        print(str(step.player) + " earns " + str(step.reward) + " points!")
+        
+    print(step.post_opp_move_state)

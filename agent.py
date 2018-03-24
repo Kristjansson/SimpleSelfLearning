@@ -3,18 +3,15 @@ import pickle as p
 import time
 
 def ids():
-    i = 100000
+    i = 1
     while True:
-        yield i
+        yield str(i)
         i += 1
-        if i > 999999:
-            i = 100000
-
+        
 class QLearner:
     id_gen = ids()
 
-    def __init__(self, mdp, q_table=None, epsilon=0.1, gamma=0.9, learning_rate=0.5, name=None):
-        self.mdp = mdp
+    def __init__(self, q_table=None, epsilon=0.1, gamma=0.9, learning_rate=0.5, name=None):
         self.q_table = q_table or {}
         self.epsilon = epsilon
         self.gamma = gamma
@@ -54,8 +51,7 @@ class QLearner:
             return p.load(load_file)
 
     def copy(self, new_name=None):
-        return QLearner(mdp=self.mdp, 
-            q_table={**self.q_table}, 
+        return QLearner(q_table={**self.q_table}, 
             epsilon=self.epsilon, 
             gamma=self.gamma, 
             learning_rate=self.learning_rate, 
@@ -63,3 +59,9 @@ class QLearner:
 
     def __eq__(self, other):
         return type(self) == type(other) and self.name == other.name
+
+    def __repr__(self):
+        return "Agent: " + self.name
+
+    def __hash__(self):
+        return hash(self.name)
