@@ -15,6 +15,6 @@ To use this library, simply clone the repository then execute either train.py or
   train.py produces an agent that seems to play optimally when manually testing.
 
   2. Implement unit tests
-  3. Implement a minimax/ provably optimal agent to benchmark RL agent against
+  3. ~~Implement a minimax/ provably optimal agent~~ to benchmark RL agent against
   4. Implement a checkers ruleset
   5. Tackle the larger state space.
