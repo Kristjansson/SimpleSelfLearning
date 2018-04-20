@@ -83,12 +83,12 @@ class Win(EndGameState):
         return super().__str__() + "\n" + "The {}'s win!".format(self.move_order[-1])
 
     def response(self):
-        return Loss()
+        return Loss(board=self.board)
 
 
 class Loss(EndGameState):
     def __str__(self):
-        return "loss"
+        return super().__str__() + "\n" + "Loss"
 
 
 class Tie(EndGameState):
@@ -96,7 +96,7 @@ class Tie(EndGameState):
         return super().__str__() + "\n" + "It's a Draw!"
 
     def response(self):
-        return Tie()
+        return Tie(board=self.board)
 
 
 def rewards(prev_state, move, new_state):
