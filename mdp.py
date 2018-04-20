@@ -6,6 +6,7 @@ class MDP:
         return self.rules.initial_state()
 
     def operators(self, state):
+        # TODO: Refactor so that agents use this interface instead of directly reaching into possible moves. 
         return state.possible_moves()
 
     def reward(self, prev_state, move, new_state, opp_move=None, opp_state=None):
