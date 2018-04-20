@@ -92,19 +92,28 @@ if __name__ == '__main__':
 
         def move(self, curr_state):
             print('The current state is: \n' + str(curr_state))
-            raw_move = input('Please input row and column separated by a space: ')
-            row, col = raw_move.split(' ')
-            row, col = int(row), int(col)
+            while True:
+                raw_move = input('Please input row and column separated by a space: ')
+                row, col = raw_move.split(' ')
+                row, col = int(row), int(col)
+                if (row, col) in curr_state.possible_moves():
+                    break
+                else:
+                    print("Invalid Move!")
+
             return (row, col)
 
 
     mdp = MDP(rules)
 
+    # game = transitions(mdp, 
+    #                (HumanConsolePlayer("X's"), HumanConsolePlayer("O's")))
+    # game = transitions(mdp, 
+    #                (HumanConsolePlayer("X's"), 
+    #                 TestingWrapper(agent.QLearner.load('champion.p'))))
     game = transitions(mdp, 
-                   (HumanConsolePlayer("X's"), HumanConsolePlayer("O's")))
-    game = transitions(mdp, 
-                   (HumanConsolePlayer("X's"), 
-                    TestingWrapper(agent.QLearner.load('champion.p'))))
+                       (HumanConsolePlayer("X's"), 
+                        TestingWrapper(agent.Minimaxer(mdp, depth=6))))
     
     for step in game:
         print(str(step.player) + " earns " + str(step.reward) + " points!")
